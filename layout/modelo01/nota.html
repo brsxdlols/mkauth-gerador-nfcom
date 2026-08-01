@@ -1,0 +1,165 @@
+<div style="page-break-after: always" class="container">
+
+    <!-- CABEÇALHO OFICIAL (mais próximo do MOC sugerido) -->
+    <div class="header-main">
+        <div class="logo-section">
+            <div class="logo-placeholder">
+                <img src="{PROVEDORLOGO}" style="max-height:75px">
+            </div>
+            <div class="company-info">
+                <div class="company-name">{PROVEDORNOME}</div>
+                <div class="company-details">
+                    {PROVEDORRAZAO}<br>
+                    CNPJ: {PROVEDORCNPJ} | IE: {PROVEDORIE}
+                </div>
+            </div>
+        </div>
+
+        <div class="center-section">
+            <div class="doc-type">
+                <div class="doc-type-title">DANFE-COM</div>
+                <div class="doc-type-subtitle">Documento Auxiliar da Nota Fiscal Fatura de Serviços de Comunicação Eletrônica</div>
+                <div class="doc-number">NFCom Nº {NFCOM_NUMERO} - Série {NFCOM_SERIE}</div>
+                <div style="font-size:8pt; margin-top:5px;">
+                    Data de Emissão: {NFCOM_EMISSAO} | Referência: {NFCOM_REF}
+                </div>
+            </div>
+
+            <div class="access-key-header">
+                <div class="access-key-header-title">CHAVE DE ACESSO</div>
+                <div class="access-key-header-value" id="chave-formatada">{NFCOM_CHAVE}</div>
+            </div>
+        </div>
+
+        <div class="qrcode-section" style="display:flex; align-items:center; gap:8px;">
+            <img src="{CONSULTAQRCODE}" style="max-height:90px">
+            <div class="qrcode-header-text" style="font-size:9pt; line-height:1.3;">
+                Consulte a NFCom pela<br>Chave de Acesso no Portal da SEFAZ<br>usando o QR Code
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- EMITENTE (completo com o que tem) -->
+    <div class="section">
+        <div class="section-header">DADOS DO EMITENTE</div>
+        <div class="section-content">
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Razão Social</span><span class="info-value">{PROVEDORRAZAO}</span></div>
+                <div class="info-item"><span class="info-label">CNPJ</span><span class="info-value">{PROVEDORCNPJ}</span></div>
+                <div class="info-item"><span class="info-label">Inscrição Estadual</span><span class="info-value">{PROVEDORIE}</span></div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Endereço</span><span class="info-value">{PROVEDORENDERECO} - {PROVEDORBAIRRO} - {PROVEDORCIDADE}/{PROVEDORESTADO} - CEP {PROVEDORCEP}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASSINANTE/DESTINATÁRIO (foco em "Assinante" como no MOC) -->
+    <div class="section">
+        <div class="section-header">DADOS DO ASSINANTE / DESTINATÁRIO</div>
+        <div class="section-content">
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Nome / Razão Social</span><span class="info-value">{CLIENTE_NOME}</span></div>
+                <div class="info-item"><span class="info-label">CPF / CNPJ</span><span class="info-value">{CLIENTE_CPF}</span></div>
+                <div class="info-item"><span class="info-label">Telefone</span><span class="info-value">{CLIENTE_TELEFONE}</span></div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Endereço</span><span class="info-value">{CLIENTE_ENDERECO} - {CLIENTE_BAIRRO} {CLIENTE_COMPLEMENTO} - {CLIENTE_CIDADE}/{CLIENTE_ESTADO} - CEP {CLIENTE_CEP}</span></div>
+                <div class="info-item"><span class="info-label">E-mail</span><span class="info-value">{CLIENTE_EMAIL}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABELA DE SERVIÇOS (max info com tributos por item) -->
+    <div class="section tabela-numerada">
+        <div class="section-header">DETALHAMENTO DOS SERVIÇOS</div>
+        <div class="section-content">
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th style="width:5%;">Item</th>
+                        <th style="width:45%;">Descrição</th>
+                        <th style="width:10%;" class="text-center">Qtd</th>
+                        <th style="width:12%;" class="text-right">Valor Unit.</th>
+                        <th style="width:12%;" class="text-right">Valor Total</th>
+                        <th style="width:8%;">% ICMS</th>
+                        <th style="width:8%;">ICMS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- BEGIN BLOCK_ITENS -->
+                    <!-- BEGIN BLOCK_DADOSITENS -->
+                    <tr>
+                        <td class="text-center"></td>
+                        <td>{ITEM_DESC}</td>
+                        <td class="text-center">1,000</td>
+                        <td class="text-right">R$ {ITEM_VALOR}</td>
+                        <td class="text-right text-bold">R$ {ITEM_VALOR}</td>
+                        <td class="text-right">{ITEM_PERC_ICMS}%</td>
+                        <td class="text-right">R$ {ITEM_VALOR_ICMS}</td>
+                    </tr>
+                    <!-- END BLOCK_DADOSITENS -->
+                    <!-- END BLOCK_ITENS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TOTAIS (maximizado com todos os campos que você tem, em boxes) -->
+    <div class="section">
+        <div class="section-header">VALORES TOTAIS</div>
+        <div class="section-content">
+            <div class="totals-section" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                <div class="totals-box">
+                    <table class="totals-table">
+                        <tr><td class="label-col">Base ICMS</td><td class="value-col">R$ {NFCOM_BASE_ICMS}</td></tr>
+                        <tr><td class="label-col">Valor ICMS</td><td class="value-col">R$ {NFCOM_VALOR_ICMS}</td></tr>
+                        <tr><td class="label-col">Valor PIS</td><td class="value-col">R$ {NFCOM_VALOR_PIS}</td></tr>
+                        <tr><td class="label-col">Valor COFINS</td><td class="value-col">R$ {NFCOM_VALOR_COFINS}</td></tr>
+                    </table>
+                </div>
+                <div class="totals-box">
+                    <table class="totals-table">
+                        <tr><td class="label-col">Valor FUST</td><td class="value-col">R$ {NFCOM_VALOR_FUST}</td></tr>
+                        <tr><td class="label-col">Valor FUNTTEL</td><td class="value-col">R$ {NFCOM_VALOR_FUNTTEL}</td></tr>
+                        <tr><td class="label-col">Valor IBPT (aprox.)</td><td class="value-col">R$ {NFCOM_VALOR_IBPT}</td></tr>
+                    </table>
+                </div>
+                <div class="totals-box">
+                    <table class="totals-table">
+                        <tr class="total-final">
+                            <td>VALOR TOTAL DA NFCom</td>
+                            <td class="text-right">R$ {NFCOM_VTOTAL}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTORIZAÇÃO (seu bloco condicional) -->
+    <!-- BEGIN BLOCK_CONCLUIDA -->
+    <div class="authorization-section concluida">
+        <div class="auth-check concluida">X</div>
+        <div class="auth-title">NOTA FISCAL ELETRÔNICA AUTORIZADA</div>
+        <div class="auth-protocol">Protocolo de Autorização: {NFCOM_PROTOCOLO}</div>
+    </div>
+    <!-- END BLOCK_CONCLUIDA -->
+
+    <!-- BEGIN BLOCK_UNCONCLUIDA -->
+    <div class="authorization-section unconcluida">
+        <div class="auth-check unconcluida">X</div>
+        <div class="auth-title">NOTA FISCAL ELETRÔNICA EM PROCESSO DE AUTORIZAÇÃO</div>
+    </div>
+    <!-- END BLOCK_UNCONCLUIDA -->
+
+    <div class="footer-section">
+        <div class="footer-title">Documento Auxiliar da Nota Fiscal Fatura de Serviços de Comunicação Eletrônica</div>
+        <div class="footer-text">
+            <strong>IMPORTANTE:</strong> Este documento não possui valor fiscal. Consulte a autenticidade no Portal da SEFAZ usando a Chave de Acesso ou QR Code.
+        </div>
+    </div>
+
+</div>

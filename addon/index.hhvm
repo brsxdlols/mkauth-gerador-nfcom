@@ -1,0 +1,563 @@
+<?php
+
+
+include('addons.class.php');
+
+session_name('mka');
+if (!isset($_SESSION)) session_start();
+if (isset($_SESSION['mka_logado'])) {
+} else {
+    session_name(strtoupper('mka'));
+    if (!isset($_SESSION)) session_start();
+    if (!isset($_SESSION['MKA_Logado'])) {
+        exit('Acesso negado... <a href="/admin/login.hhvm">Fazer Login</a>');
+    } else {
+    }
+}
+?>
+<!DOCTYPE html>
+<?php
+if(isset($_SESSION['MM_Usuario'])){
+    echo '<html lang="pt-BR">';
+}else{
+    echo '<html lang="pt-BR" class="has-navbar-fixed-top">';
+}
+?>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+        <title>MK - AUTH :: <?php echo $Manifest->{'name'}." - V ". $Manifest->{'version'};  ?></title>
+        <link href="../../estilos/mk-auth.css" rel="stylesheet" type="text/css" />
+        <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css" />
+        <link href="../../estilos/bi-icons.css" rel="stylesheet" type="text/css" />
+        <script src="../../scripts/jquery.js"></script>
+        <script src="../../scripts/mk-auth.js"></script>
+        <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
+        <link href="css/css.css" rel="stylesheet" type="text/css" />
+
+        <script>
+$(document).ready(function() {
+    $('#selecctall').click(function(event) {
+        if (this.checked) {
+            $('.checkbox').each(function() {
+                this.checked = true;
+            });
+            $('.boxnfe').each(function() {
+                this.checked = true;
+            });
+        } else {
+            $('.checkbox').each(function() {
+                this.checked = false;
+            });
+            $('.boxnfe').each(function() {
+                this.checked = false;
+            });
+        }
+    });
+
+    $('#allnfe').click(function(event) {
+        if (this.checked) {
+            $('.boxnfe').each(function() {
+                this.checked = true;
+            });
+        } else {
+            $('.boxnfe').each(function() {
+                this.checked = false;
+            });
+        }
+    });
+});
+</script>
+
+</head>
+<body>
+
+<?php 
+    include('config.hhvm'); 
+
+    include('../../topo.hhvm'); 
+
+    if ($acesso_permitido){
+
+?>
+	
+
+<?php include 'nav/navbar.php'; ?>
+<style>
+  .custom-container {
+    max-width: 1250px;
+    margin: 0 auto;
+  }
+</style>
+
+
+
+<?php
+$busca      = $_GET['busca'] ?? '';
+$mes_get    = $_GET['mes']  ?? date('m');
+$ano_get    = $_GET['ano']  ?? date('Y');
+$status_cap = $_GET['status'] ?? '%';
+
+$mes_get = str_pad($mes_get, 2, '0', STR_PAD_LEFT);
+
+$data_inicial     = "$ano_get-$mes_get-01";
+$data_final       = date('Y-m-t', strtotime($data_inicial));
+$data_inicial_sql = $data_inicial;
+$data_final_sql   = $data_final;
+$servicos_avulsos = [];
+$q_mlanc = mysqli_query($link, "SELECT idlanc, tipo, SUM(valor) AS total_valor FROM sis_mlanc GROUP BY idlanc, tipo");
+if ($q_mlanc && mysqli_num_rows($q_mlanc) > 0) {
+    while ($m = mysqli_fetch_assoc($q_mlanc)) {
+        $idlanc = $m['idlanc'];
+        $valor  = (float)$m['total_valor'];
+        $tipo   = strtolower(trim($m['tipo']));
+        if (!isset($servicos_avulsos[$idlanc])) $servicos_avulsos[$idlanc] = 0;
+        if ($tipo === 'desconto') {
+            $servicos_avulsos[$idlanc] -= $valor;
+        } else {
+            $servicos_avulsos[$idlanc] += $valor;
+        }
+    }
+}
+
+$ano = $ano_get;
+$mes = $mes_get;
+$ref = substr($ano, 2, 2) . $mes;
+
+
+$query = "
+SELECT 
+    t.id, 
+    t.login, 
+    t.datavenc,
+    t.valor, 
+    t.valorpag, 
+    t.status, 
+    c.nome,
+    c.nome_res, 
+    c.cadastro,
+    c.uuid_cliente, 
+    c.bloqueado    
+FROM sis_lanc t
+LEFT JOIN sis_cliente c ON t.login = c.login
+WHERE 
+(
+    c.nome LIKE '%$busca%' OR
+    c.login LIKE '%$busca%' OR
+    c.nome_res LIKE '%$busca%'
+)
+AND c.geranfe LIKE 'sim'
+AND t.deltitulo = 0
+AND t.datavenc BETWEEN '$data_inicial_sql' AND '$data_final_sql'
+AND c.cli_ativado = 's'
+AND t.status LIKE '$status_cap'
+AND t.uuid_lanc NOT IN (SELECT titulo FROM sis_nfcom)  -- 🚫 ignora títulos já com NFCom
+ORDER BY c.nome ASC";
+
+
+$result = mysqli_query($link, $query);
+$total_listados = mysqli_num_rows($result);
+
+if (!$result) {
+    echo mysqli_error($link);
+}
+
+
+
+            $query_nfe_gerada = mysqli_query($link, "SELECT id_titulo FROM sis_nfe WHERE referencia = '$ref'");
+            $nfe_gerada = [];
+            while ($n = mysqli_fetch_array($query_nfe_gerada)) {
+                $nfe_gerada[$n['id_titulo']] = true;
+            }
+
+    if (!$result){
+        echo mysqli_error($link);
+    }
+
+    
+
+?>
+
+<form id="filtro_auto" class="no_print">
+    <div class="container mb-3">
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3 col-6">
+                <label class="form-label fw-bold">Mês:</label>
+                <select name="mes" class="form-select filtro-auto">
+                    <?php
+                    $mes_atual = $_GET['mes'] ?? date('m');
+                    $meses = ['01'=>'Janeiro','02'=>'Fevereiro','03'=>'Março','04'=>'Abril','05'=>'Maio','06'=>'Junho','07'=>'Julho','08'=>'Agosto','09'=>'Setembro','10'=>'Outubro','11'=>'Novembro','12'=>'Dezembro'];
+                    foreach ($meses as $n => $nome) {
+                        $sel = ($n == $mes_atual) ? 'selected' : '';
+                        echo "<option value='$n' $sel>$nome</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <div class="col-md-2 col-6">
+                <label class="form-label fw-bold">Ano:</label>
+                <select name="ano" class="form-select filtro-auto">
+                    <?php
+                    $ano_atual = date('Y');
+                    $ano_sel = $_GET['ano'] ?? $ano_atual;
+                    for ($a = $ano_atual - 5; $a <= $ano_atual + 2; $a++) {
+                        $sel = ($a == $ano_sel) ? 'selected' : '';
+                        echo "<option value='$a' $sel>$a</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <label class="form-label fw-bold">Status:</label>
+                <select name="status" class="form-select filtro-auto">
+                    <?php
+                    $status_list = ['%' => 'TODOS', 'pago' => 'PAGO', 'aberto' => 'ABERTO'];
+                    foreach ($status_list as $k => $v) {
+                        $sel = ($status_cap == $k) ? 'selected' : '';
+                        echo "<option value='$k' $sel>$v</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <div class="col-12 mt-3">
+                <div class="row g-2 align-items-center">
+                    <div class="col-lg-9 col-12">
+                        <input type="text" name="busca" class="form-control" 
+                               placeholder="Pesquisar: Nome, Login ou Nome Resumido" 
+                               value="<?php echo htmlspecialchars($busca ?? ''); ?>">
+                    </div>
+                    <div class="col-lg-3 col-12">
+                        <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById('filtro_auto');
+    document.querySelectorAll('.filtro-auto').forEach(el => {
+        el.addEventListener('change', () => {
+            const temp = form.busca.value;
+            const input = form.querySelector('input[name="busca"]');
+            input.removeAttribute('name');
+            form.submit();
+            setTimeout(() => { input.name = 'busca'; input.value = temp; }, 100);
+        });
+    });
+});
+</script>
+
+<?php
+$total_valor_faturado = 0;
+$total_valor_pago     = 0;
+$total_clientes       = 0;
+
+mysqli_data_seek($result, 0);
+while ($r = mysqli_fetch_array($result)) {
+    $id_titulo      = $r['id'];
+    $valor_boleto   = (float)$r['valor'];
+    $valor_extra    = $servicos_avulsos[$id_titulo] ?? 0;
+    
+    $total_valor_faturado += $valor_boleto + $valor_extra;
+    $total_valor_pago     += (float)$r['valorpag'];
+    $total_clientes++;
+}
+mysqli_data_seek($result, 0);
+?>
+
+<div class="d-flex align-items-center justify-content-center gap-5 flex-wrap bg-white py-2 px-4 rounded shadow-sm mt-3 mb-4" style="font-size: 14px;">
+    
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-cash-stack text-primary fs-4"></i>
+        <div>
+            <small class="text-muted d-block lh-1">Total Faturado</small>
+            <strong class="text-primary fw-bold fs-5">
+                R$ <?php echo number_format($total_valor_faturado, 2, ',', '.'); ?>
+            </strong>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check2-circle text-success fs-4"></i>
+        <div>
+            <small class="text-muted d-block lh-1">Total Recebido</small>
+            <strong class="text-success fw-bold fs-5">
+                R$ <?php echo number_format($total_valor_pago, 2, ',', '.'); ?>
+            </strong>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-receipt text-info fs-4"></i>
+        <div>
+            <small class="text-muted d-block lh-1">NFCom Listadas</small>
+            <strong class="text-info fw-bold fs-5">
+                <?php echo $total_clientes; ?>
+            </strong>
+        </div>
+    </div>
+
+</div>
+
+   <?php
+echo '
+<form id="form_nfe" action="../../titulos_nfcom.hhvm" method="post">
+<div class="container-fluid">
+
+<div style="font-size:15px; font-weight:bold; margin: 10px 0;">
+    🔍 Total listado: ' . $total_listados . ' cliente(s)
+    <span style="margin-left:12px; background:#fff3cd; border:1px solid #ffeeba; padding:2px 6px; border-radius:4px; font-size:12px;">
+        OBS: Necessário Nota Fiscal: (<span style="color:#28a745;">●</span>) sim / ativa para listagem — 
+        <a href="ativarnfdici.php" style="color:#0d6efd; text-decoration:none; font-weight:bold;">clique aqui para ativar</a>
+    </span>
+</div>
+
+    <div class="table-responsive">
+        <table id="lista" class="table table-bordered table-hover">
+
+            <thead>
+                <tr>
+                    <th style="background-color:#0d3b66; color:white;">
+                        <input type="checkbox" id="selecctall"/>
+                    </th>
+                    <th style="background-color:#0d3b66; color:white;">
+                        <i class="bi bi-person-fill text-warning"></i> NOME - N.RESUMIDO - LOGIN
+                    </th>
+                    <th style="background-color:#0d3b66; color:white;">
+                        <i class="bi bi-calendar-check-fill text-success"></i> CADASTRO
+                    </th>
+                    <th style="background-color:#0d3b66; color:white;">
+                        <i class="bi bi-file-earmark-text-fill text-info"></i> TÍTULO
+                    </th>
+                 <th style="background-color:#0d3b66; color:white;">
+                    VENCIMENTO
+                </th>
+                    <th style="background-color:#0d3b66; color:white;">
+                        <i class="bi bi-currency-dollar text-success"></i> VALOR
+                    </th>
+                    <th style="background-color:#0d3b66; color:white;">
+                        <i class="bi bi-check-circle-fill text-primary"></i> VALOR PAGO
+                    </th>
+                    <th style="background-color:#0d3b66; color:white;">
+                        <i class="bi bi-info-circle-fill text-light"></i> STATUS
+                    </th>
+                    <th style="background-color:#0d3b66; color:white;">
+                      <i class="bi bi-receipt-cutoff text-warning"></i> NFE STATUS
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+';
+
+
+
+$total_listados = 0;
+
+
+while ($row = mysqli_fetch_array($result)) {
+    $total_listados++;
+    $t_tit_id = $row['id'];
+    $c_login = $row['login'];
+    $c_nome = $row['nome'];
+    $uuid_cliente = $row['uuid_cliente'];
+    $c_nome_res = $row['nome_res'];
+    $c_bloq = $row['bloqueado'];
+    $c_cadastro = $row['cadastro'];
+    $t_vencimento   = date('d/m/Y', strtotime($row['datavenc']));
+
+
+        $id_titulo      = $row['id'];  
+        $valor_boleto   = (float)$row['valor'];
+        $valor_extra    = $servicos_avulsos[$id_titulo] ?? 0;
+        $valor_final    = $valor_boleto + $valor_extra;
+        $t_valor        = number_format($valor_final, 2, ',', '.');
+
+        $t_valorpag     = number_format($row['valorpag'], 2, ',', '.');
+        $t_status       = $row['status'];
+
+    switch(strtolower($t_status)) {
+        case 'pago':
+            $status_html = "<span class='text-success font-weight-bold'>PAGO</span>";
+            break;
+        case 'aberto':
+            $status_html = "<span class='text-primary font-weight-bold'>ABERTO</span>";
+            break;
+        default:
+            $status_html = "<span class='text-danger font-weight-bold'>$t_status</span>";
+            break;
+    }
+
+if (strtolower($t_status) !== 'pago') {
+    $valor_html = "<span style='background:#cfe2ff; color:#0d6efd; font-weight:600; padding:3px 10px; border-radius:8px;'>R$ $t_valor</span>";
+    $valorpag_html = "<span style='background:#cfe2ff; color:#0d6efd; font-weight:600; padding:3px 10px; border-radius:8px;'>⏳ A receber</span>";
+} else {
+    $valor_html = "<span style='background:#cfe2ff; color:#0d6efd; font-weight:600; padding:3px 10px; border-radius:8px;'>R$ $t_valor</span>";
+    $valorpag_html = "<span style='background:#d1e7dd; color:#0f5132; font-weight:600; padding:3px 10px; border-radius:8px;'>R$ $t_valorpag</span>";
+}
+
+
+
+
+ 
+$query_uuid = mysqli_query($link, "SELECT uuid_lanc FROM sis_lanc WHERE id = '$t_tit_id' LIMIT 1");
+$uuid_lanc = '';
+if ($query_uuid && mysqli_num_rows($query_uuid) > 0) {
+    $dados_uuid = mysqli_fetch_assoc($query_uuid);
+    $uuid_lanc = $dados_uuid['uuid_lanc'];
+}
+
+
+$nfcom_status = null;
+if ($uuid_lanc != '') {
+    $query_nfcom = mysqli_query($link, "SELECT status, emissao FROM sis_nfcom WHERE titulo = '$uuid_lanc' LIMIT 1");
+    if ($query_nfcom && mysqli_num_rows($query_nfcom) > 0) {
+        $dados_nfcom = mysqli_fetch_assoc($query_nfcom);
+        $nfcom_status = strtoupper(trim($dados_nfcom['status']));
+        $nfcom_emissao = date('d/m/Y', strtotime($dados_nfcom['emissao']));
+    }
+}
+
+if ($nfcom_status === 'CONCLUIDO') {
+    continue;
+}
+
+if ($nfcom_status) {
+    switch ($nfcom_status) {
+        case 'PROCESSANDO':
+        case 'EM PROCESSO':
+            $nfe_login = "<span class='text-warning font-weight-bold'>⏳ EM PROCESSO</span><br><small class='text-muted'>Emissão: $nfcom_emissao</small>";
+            break;
+        case 'ERRO':
+        case 'REJEITADO':
+            $nfe_login = "<span class='text-danger font-weight-bold'>❌ ERRO / REJEITADO</span><br><small class='text-muted'>Emissão: $nfcom_emissao</small>";
+            break;
+        default:
+            $nfe_login = "<span class='text-secondary font-weight-bold'>$nfcom_status</span><br><small class='text-muted'>Emissão: $nfcom_emissao</small>";
+            break;
+    }
+
+    $linha_checkbox = "<td><input type='checkbox' class='boxnfe' name='titulo[$t_tit_id]' value='$t_tit_id'></td>";
+    $classe_linha = "bg-light";
+} else {
+    $nfe_login = "<span class='text-danger font-weight-bold'>❌ NÃO GERADA</span>";
+    $linha_checkbox = "<td><input type='checkbox' class='checkbox' name='titulo[$t_tit_id]' value='$t_tit_id'></td>";
+    $classe_linha = ($c_bloq == 'sim') ? 'table-danger' : '';
+}
+
+
+    $linha[$c_login] = "
+    <tr class='$classe_linha'>
+        $linha_checkbox       
+          <td>
+    <strong>$c_nome</strong><br>
+    <span style='font-size:11px; color:#444;'>$c_nome_res</span><br>
+    <span style='font-size:11px; color:#444;'>$c_login</span>   
+    <div style='margin-top:4px; font-size:12px;'>
+      <a href='/admin/cliente_det.hhvm?uuid=" . urlencode($uuid_cliente) . "' 
+         style='color:#000; text-decoration:none;'>
+         <i class='bi bi-cash-stack'></i> Detalhes
+      </a>
+
+      &nbsp;|&nbsp;
+
+      <a href='/admin/cliente_alt.hhvm?uuid=" . urlencode($uuid_cliente) . "' 
+         style='color:#000; text-decoration:none;'>
+         <i class='fa fa-edit'></i> Alterar
+      </a>
+    </div> 
+        </td>
+        <td>$c_cadastro</td>
+        <td>$t_tit_id</td>
+        <td>$t_vencimento</td>
+        <td>$valor_html</td>
+        <td>$valorpag_html</td>
+        <td>$status_html</td>
+        <td>$nfe_login</td>
+    </tr>";
+
+
+
+
+
+
+if ($status_cap === '%' || strtolower($t_status) === $status_cap) {
+    echo $linha[$c_login];
+}
+}
+
+echo "
+            </tbody>
+        </table>
+    </div>
+
+    <div class='text-center mb-3'>
+        <button type='button' id='gerar_nfe_popup' name='gerar_nfe' title='GERAR NFE' class='btn btn-success'>
+            <i class='bi bi-receipt'></i> Processar para NFcom 1º Etapa
+        </button>
+    </div>
+
+</div>
+</form>
+
+<script>
+document.getElementById('gerar_nfe_popup').addEventListener('click', function() {
+    let marcados = document.querySelectorAll(\"input[name^='titulo[']:checked\").length;
+    if (marcados === 0) {
+        alert('Selecione pelo menos um cliente para gerar a NFE!');
+        return;
+    }
+
+    let hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'gerar_nfe';
+    hidden.value = '1';
+    let popup = window.open('', 'NFE2025', 'width=795,height=680,left=10,top=10,scrollbars=yes,resizable=yes');
+    popup.focus();
+
+    let form = document.getElementById('form_nfe');
+    form.appendChild(hidden);
+    form.target = 'NFE2025';
+    form.submit();
+});
+</script>
+";
+
+if (!$result){
+    echo mysqli_error($link);
+}
+mysqli_close($link);
+?>
+
+
+    
+
+</table>
+
+<?php  } // FIm permissao
+?>
+
+    <div class="pt-3">
+        <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap" style="font-size: 12px; padding: 8px 0;">
+            
+            <span><strong>Addon NFCOM NOTA 62
+            <a href="https://wa.me/5582987361943?text=Ol%C3%A1%2C+gostaria+de+saber+mais+sobre+o+addon+de+Envio+de+Mensagens+Personalizadas" 
+               class="btn btn-link p-0 m-0 text-success" style="font-size: 11px;" target="_blank">
+            </a>
+        </div>
+    </div>
+
+<?php include('../../baixo.hhvm'); ?>
+
+        <script src="../../menu.js.hhvm"></script>
+
+    </body>
+</html>

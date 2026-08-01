@@ -1,0 +1,10 @@
+desktop.ini
+*.log
+*.bak
+*.pfx
+*.p12
+*.pem
+*.key
+config.local.php
+work/
+outputs/

@@ -1,0 +1,24 @@
+<?php
+/** Reutiliza a conexão oficial do MK-Auth; não armazena credenciais. */
+$mkConnectionFile = '/opt/mk-auth/include/conexao.php';
+if (!is_readable($mkConnectionFile)) {
+    http_response_code(500);
+    exit('Conexão do MK-Auth não encontrada.');
+}
+require_once $mkConnectionFile;
+if (!isset($LOADMYSQL) || !($LOADMYSQL instanceof mysqli)) {
+    http_response_code(500);
+    exit('Conexão mysqli do MK-Auth indisponível.');
+}
+$link = $LOADMYSQL;
+$exibir_graf_emprestimos = false;
+$usuario_logado = '';
+if (isset($_SESSION['MKA_Usuario']) && $_SESSION['MKA_Usuario'] !== '') {
+    $usuario_logado = $_SESSION['MKA_Usuario'];
+} elseif (isset($_SESSION['MM_Usuario']) && $_SESSION['MM_Usuario'] !== '') {
+    $usuario_logado = $_SESSION['MM_Usuario'];
+}
+if (isset($_SESSION['MM_Usuario'])) {
+    echo '<script src="../../scripts/vue.js"></script>';
+}
+$ext_mk = file_exists('../../index.hhvm') ? '.hhvm' : '.php';
