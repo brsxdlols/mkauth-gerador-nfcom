@@ -40,7 +40,7 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 
 ## Validação manual sem emitir NFCOM
 
-Após instalar, autentique-se no painel e abra **Ferramentas → NFCOM / Gerador NF DICI**. Confirme apenas carregamento, navegação e presença do layout; não processe ou emita documento fiscal em produção durante o teste.
+Após instalar, autentique-se no painel e abra **Opções → NFCOM / Gerador NF DICI**. Confirme apenas carregamento, navegação e presença do layout; não processe ou emita documento fiscal em produção durante o teste.
 
 ## Licença
 

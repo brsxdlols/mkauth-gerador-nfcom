@@ -102,7 +102,7 @@ awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '
 {
     cat "$tmp/addon.js"
     printf '\n%s\n' "$BEGIN_MARKER"
-    printf '%s\n' "add_menu.ferramentas('{\"plink\": \"' + minha_url + 'addons/gerador_nf_dici/index.hhvm\", \"ptext\": \"NFCOM / Gerador NF DICI\"}');"
+    printf '%s\n' "add_menu.opcoes('{\"plink\": \"' + minha_url + 'addons/gerador_nf_dici/index.hhvm\", \"ptext\": \"NFCOM / Gerador NF DICI\"}');"
     printf '%s\n' "$END_MARKER"
 } > "$tmp/addon.js.new"
 cp "$tmp/addon.js.new" "$menu"
