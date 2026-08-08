@@ -8,7 +8,7 @@ function mkauth_addon_bootstrap_session()
 {
     if (session_status() === PHP_SESSION_ACTIVE) return;
     $candidates = array();
-    foreach (array('mka', 'MKA', session_name()) as $candidate) {
+    foreach (array('mka', 'MKA', 'MKASESSID', 'PHPSESSID', session_name()) as $candidate) {
         if ($candidate !== '' && isset($_COOKIE[$candidate])) $candidates[] = $candidate;
     }
     if (!$candidates) $candidates[] = 'mka';
@@ -40,7 +40,7 @@ if (!defined('ADMIN2URL')) {
 }
 
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.6');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.7');
 if (is_readable($manifestPath)) {
     $decoded = json_decode(file_get_contents($manifestPath));
     if (is_object($decoded)) $Manifest = $decoded;
