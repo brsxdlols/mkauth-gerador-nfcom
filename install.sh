@@ -79,10 +79,10 @@ cp -a "$src/layout/modelo01" "$stage_layout"
 
 # addons.class.php é reservado e pode ser recriado pelo próprio MK-Auth.
 rm -f "$stage_addon/addons.class.php"
-if [ -e "$MK_ROOT/$ADDON_REL/addons.class.php" ] || [ -L "$MK_ROOT/$ADDON_REL/addons.class.php" ]; then
-    cp -a "$MK_ROOT/$ADDON_REL/addons.class.php" "$stage_addon/addons.class.php"
-elif [ -e "$MK_ROOT/include/addons.inc.hhvm" ]; then
+if [ -e "$MK_ROOT/include/addons.inc.hhvm" ]; then
     ln -s "$MK_ROOT/include/addons.inc.hhvm" "$stage_addon/addons.class.php"
+elif [ -e "$MK_ROOT/$ADDON_REL/addons.class.php" ] || [ -L "$MK_ROOT/$ADDON_REL/addons.class.php" ]; then
+    cp -a "$MK_ROOT/$ADDON_REL/addons.class.php" "$stage_addon/addons.class.php"
 fi
 find "$stage_addon" -type d -exec chmod 755 {} \;
 find "$stage_addon" -type f -exec chmod 644 {} \;

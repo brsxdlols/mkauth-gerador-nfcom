@@ -28,14 +28,13 @@ function mkauth_addon_require_login()
 }
 mkauth_addon_bootstrap_session();
 
-/* O arquivo reservado do MK-Auth inicializa constantes e o tema do painel. */
-$mkauthAddonBootstrap = __DIR__ . '/addons.class.php';
-if (is_readable($mkauthAddonBootstrap)) {
-    include_once $mkauthAddonBootstrap;
+/* O cabeçalho do painel usa esta constante; evita o bootstrap reservado do MK-Auth. */
+if (!defined('ADMIN2URL')) {
+    define('ADMIN2URL', '/admin/');
 }
 
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.4');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.5');
 if (is_readable($manifestPath)) {
     $decoded = json_decode(file_get_contents($manifestPath));
     if (is_object($decoded)) $Manifest = $decoded;
