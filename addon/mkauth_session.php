@@ -27,8 +27,15 @@ function mkauth_addon_require_login()
     if (!mkauth_addon_is_authenticated()) exit('Acesso negado... <a href="/admin/login.hhvm">Fazer Login</a>');
 }
 mkauth_addon_bootstrap_session();
+
+/* O arquivo reservado do MK-Auth inicializa constantes e o tema do painel. */
+$mkauthAddonBootstrap = __DIR__ . '/addons.class.php';
+if (is_readable($mkauthAddonBootstrap)) {
+    include_once $mkauthAddonBootstrap;
+}
+
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.2');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.3');
 if (is_readable($manifestPath)) {
     $decoded = json_decode(file_get_contents($manifestPath));
     if (is_object($decoded)) $Manifest = $decoded;
