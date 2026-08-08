@@ -28,13 +28,19 @@ function mkauth_addon_require_login()
 }
 mkauth_addon_bootstrap_session();
 
-/* O cabeçalho do painel usa esta constante; evita o bootstrap reservado do MK-Auth. */
+/* Carrega somente constantes/funções básicas, sem o bootstrap reservado do addon. */
+$mkauthConfigure = dirname(__DIR__, 3) . '/include/configure.php';
+if (is_readable($mkauthConfigure)) {
+    include_once $mkauthConfigure;
+}
+
+/* Compatibilidade com instalações que não possuem configure.php. */
 if (!defined('ADMIN2URL')) {
     define('ADMIN2URL', '/admin/');
 }
 
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.5');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.6');
 if (is_readable($manifestPath)) {
     $decoded = json_decode(file_get_contents($manifestPath));
     if (is_object($decoded)) $Manifest = $decoded;
