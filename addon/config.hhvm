@@ -11,6 +11,9 @@ if (!isset($LOADMYSQL) || !($LOADMYSQL instanceof mysqli)) {
     exit('Conexão mysqli do MK-Auth indisponível.');
 }
 $link = $LOADMYSQL;
+if (!$link->set_charset('utf8mb4')) {
+    $link->set_charset('utf8');
+}
 $exibir_graf_emprestimos = false;
 $usuario_logado = '';
 if (isset($_SESSION['MKA_Usuario']) && $_SESSION['MKA_Usuario'] !== '') {

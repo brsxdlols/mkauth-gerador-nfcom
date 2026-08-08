@@ -38,6 +38,13 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Antes da troca, addon, layout e `addon.js` existentes são copiados integralmente para backup.
 - Arquivos locais, logs, certificados, chaves, configurações particulares e `desktop.ini` não fazem parte da distribuição.
 
+## Correções da versão 1.1.0
+
+- Detecta automaticamente sessões `mka`, `MKA` e a sessão PHP ativa do painel.
+- Mantém o resultado da geração DICI na tela e mostra erros retornados pelo servidor.
+- Gera o CSV DICI diretamente em UTF-8 com BOM e finais de linha CRLF, conforme exigência exibida pelo portal da ANATEL.
+- Não depende mais do privilégio MySQL `INTO OUTFILE` para gerar o arquivo DICI.
+
 ## Validação manual sem emitir NFCOM
 
 Após instalar, autentique-se no painel e abra **Opções → NFCOM / Gerador NF DICI**. Confirme apenas carregamento, navegação e presença do layout; não processe ou emita documento fiscal em produção durante o teste.

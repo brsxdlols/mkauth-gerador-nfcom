@@ -220,12 +220,11 @@ $(document).ready(function() {
             type: 'GET',
             data: $(this).serialize(), 
             success: function(response) {
-                $('#resultadoRelatorio').html(response); 
-
-                location.reload();
+                $('#resultadoRelatorio').html(response);
             },
             error: function(xhr, status, error) {
-                $('#resultadoRelatorio').html('<div class="alert alert-danger">Erro ao gerar o relatório: ' + error + '</div>');
+                var detalhe = xhr.responseText ? xhr.responseText : error;
+                $('#resultadoRelatorio').html('<div class="alert alert-danger">Erro ao gerar o relatório: ' + $('<div>').text(detalhe).html() + '</div>');
             }
         });
     });

@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/addons.class.php';
+if (empty($_SESSION['mka_logado']) && empty($_SESSION['MKA_Logado'])) {
+    http_response_code(401);
+    exit('Sessão expirada. Entre novamente no MK-Auth.');
+}
 require_once __DIR__ . '/config.hhvm';
 
 if (isset($_GET['form_submitted'])) {
@@ -20,28 +25,6 @@ if (isset($_GET['form_submitted'])) {
     $cli_gerarNF = isset($_GET['ngerarnf']) ? "(a.geranfe = 'sim' OR a.geranfe = 'nao')" : "a.geranfe = 'sim'";
     $cli_gerarNF_aux = isset($_GET['ngerarnf']) ? "'F'" : "'T'";
 
-    $stmt = $link->query("
-        SELECT 'CNPJ', 'ANO', 'MES', 'COD_IBGE', 'TIPO_CLIENTE', 'TIPO_ATENDIMENTO', 'TIPO_MEIO', 'TIPO_PRODUTO', 'TIPO_TECNOLOGIA', 'VELOCIDADE', 'ACESSOS'
-        UNION
-        SELECT CONCAT('\"', IF(prov.cnpj IS NULL, '00000000000000', REPLACE(REPLACE(REPLACE(prov.cnpj, '.', ''), '-', ''), '/', '')), '\"'), '$cli_ano', '$cli_mes', a.cidade_ibge AS COD_IBGE, IF(a.tipo_pessoa = 3, 'PF', 'PJ') AS TIPO_CLIENTE,
-            IF(INSTR(a.tags, 'rural') <> 0, 'RURAL', 'URBANO') AS TIPO_ATENDIMENTO,
-            IF(p.tecnologia = 'H', 'fibra', IF(p.tecnologia IN ('k', 'D', 'C'), 'radio', IF(p.tecnologia = 'G', 'satelite', IF(p.tecnologia = 'M', 'cabo_metalico', IF(p.tecnologia = 'J', 'cabo_coaxial', 'cabo_metalico'))))) AS TIPO_MEIO,
-            'internet' AS TIPO_PRODUTO, 'ETHERNET' AS TIPO_TECNOLOGIA, FORMAT(p.veldown, 0) AS VELOCIDADE, COUNT(*) AS ACESSOS
-        FROM sis_provedor prov, sis_cliente a INNER JOIN sis_plano p ON a.plano = p.nome 
-        WHERE $cli_ativado
-        AND $cli_bloqueado
-        AND $cli_gerarSici
-        AND $cli_gerarNF
-        AND $cli_isentoP
-        AND a.cidade_ibge IS NOT NULL
-        AND a.plano IS NOT NULL
-        AND STR_TO_DATE(a.cadastro, '%d/%m/%Y') <= STR_TO_DATE('30/$cli_mes/$cli_ano', '%d/%m/%Y')
-        GROUP BY a.cidade_ibge, a.tipo_pessoa, TIPO_ATENDIMENTO, TIPO_MEIO, p.veldown
-        INTO OUTFILE '$csv_caminho'
-        CHARACTER SET latin1
-        FIELDS TERMINATED BY ';'
-        LINES TERMINATED BY '\r\n'");
-
     $result = $link->query("
         SELECT IF(prov.cnpj IS NULL, '00000000000000', REPLACE(REPLACE(REPLACE(prov.cnpj, '.', ''), '-', ''), '/', '')) AS CNPJ, '$cli_ano' AS ANO, '$cli_mes' AS MES, a.cidade_ibge AS COD_IBGE, IF(a.tipo_pessoa = 3, 'PF', 'PJ') AS TIPO_CLIENTE,
             IF(INSTR(a.tags, 'rural') <> 0, 'RURAL', 'URBANO') AS TIPO_ATENDIMENTO,
@@ -57,6 +40,33 @@ if (isset($_GET['form_submitted'])) {
         AND a.plano IS NOT NULL
         AND STR_TO_DATE(a.cadastro, '%d/%m/%Y') <= STR_TO_DATE('30/$cli_mes/$cli_ano', '%d/%m/%Y')
         GROUP BY a.cidade_ibge, a.tipo_pessoa, TIPO_ATENDIMENTO, TIPO_MEIO, p.veldown");
+
+    if (!$result) {
+        http_response_code(500);
+        exit('Falha na consulta DICI: ' . htmlspecialchars($link->error, ENT_QUOTES, 'UTF-8'));
+    }
+
+    $csvHandle = @fopen($csv_caminho, 'xb');
+    if (!$csvHandle) {
+        http_response_code(500);
+        exit('Não foi possível criar o CSV em disco_virtual. Verifique as permissões do diretório.');
+    }
+    fwrite($csvHandle, "\xEF\xBB\xBF");
+    $writeCsvLine = function ($handle, $fields) {
+        $memory = fopen('php://temp', 'r+');
+        fputcsv($memory, $fields, ';');
+        rewind($memory);
+        $line = rtrim(stream_get_contents($memory), "\r\n") . "\r\n";
+        fclose($memory);
+        fwrite($handle, $line);
+    };
+    $writeCsvLine($csvHandle, array('CNPJ', 'ANO', 'MES', 'COD_IBGE', 'TIPO_CLIENTE', 'TIPO_ATENDIMENTO', 'TIPO_MEIO', 'TIPO_PRODUTO', 'TIPO_TECNOLOGIA', 'VELOCIDADE', 'ACESSOS'));
+    while ($csvRow = $result->fetch_assoc()) {
+        $writeCsvLine($csvHandle, array_values($csvRow));
+    }
+    fclose($csvHandle);
+    @chmod($csv_caminho, 0644);
+    $result->data_seek(0);
 
     $resultSucesso = $link->query("
         SELECT a.nome AS NOME
