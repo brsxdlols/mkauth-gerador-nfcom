@@ -7,6 +7,17 @@ function mkauth_addon_is_authenticated()
 function mkauth_addon_bootstrap_session()
 {
     if (session_status() === PHP_SESSION_ACTIVE) return;
+    /* MK-Auth recente usa nomes dinâmicos: _admin-<hash>-MKA. */
+    foreach ($_COOKIE as $cookieName => $sessionId) {
+        if (!preg_match('/^_admin-[a-f0-9]{40}-MKA$/i', $cookieName)) continue;
+        if (!is_string($sessionId) || !preg_match('/^[A-Za-z0-9,-]{16,128}$/D', $sessionId)) continue;
+        session_name('mka');
+        session_id($sessionId);
+        session_start();
+        if (mkauth_addon_is_authenticated()) return;
+        session_write_close();
+        $_SESSION = array();
+    }
     $candidates = array();
     foreach (array('mka', 'MKA', 'MKASESSID', 'PHPSESSID', session_name()) as $candidate) {
         if ($candidate !== '' && isset($_COOKIE[$candidate])) $candidates[] = $candidate;
@@ -14,6 +25,7 @@ function mkauth_addon_bootstrap_session()
     if (!$candidates) $candidates[] = 'mka';
     foreach (array_unique($candidates) as $candidate) {
         session_name($candidate);
+        session_id('');
         session_start();
         if (mkauth_addon_is_authenticated()) return;
         session_write_close();
@@ -40,7 +52,7 @@ if (!defined('ADMIN2URL')) {
 }
 
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.7');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.8');
 if (is_readable($manifestPath)) {
     $decoded = json_decode(file_get_contents($manifestPath));
     if (is_object($decoded)) $Manifest = $decoded;
