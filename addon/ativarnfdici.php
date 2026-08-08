@@ -1,8 +1,6 @@
 <?php
 include('addons.class.php');
-session_name('mka');
-if (!isset($_SESSION)) session_start();
-if (!isset($_SESSION['mka_logado']) && !isset($_SESSION['MKA_Logado'])) exit('Acesso negado... <a href="/admin/login.hhvm">Fazer Login</a>');
+mkauth_addon_require_login();
 
 $manifestTitle = isset($Manifest->{'name'}) ? $Manifest->{'name'} : '';
 $manifestVersion = isset($Manifest->{'version'}) ? $Manifest->{'version'} : '';

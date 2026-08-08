@@ -39,9 +39,24 @@ function mkauth_addon_bootstrap_session()
     session_start();
 }
 mkauth_addon_bootstrap_session();
+
+function mkauth_addon_is_authenticated()
+{
+    return !empty($_SESSION['mka_logado'])
+        || !empty($_SESSION['MKA_Logado'])
+        || !empty($_SESSION['MM_Usuario'])
+        || !empty($_SESSION['MKA_Usuario']);
+}
+
+function mkauth_addon_require_login()
+{
+    if (!mkauth_addon_is_authenticated()) {
+        exit('Acesso negado... <a href="/admin/login.hhvm">Fazer Login</a>');
+    }
+}
 /** Bootstrap transparente; nome histórico mantido para compatibilidade. */
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.0');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.1');
 if (is_readable($manifestPath)) {
     $manifestDecoded = json_decode(file_get_contents($manifestPath));
     if (is_object($manifestDecoded)) {

@@ -1,17 +1,6 @@
 <?php
 include('addons.class.php');
-
-session_name('mka');
-if (!isset($_SESSION)) session_start();
-if (isset($_SESSION['mka_logado'])) {
-} else {
-    session_name(strtoupper('mka'));
-    if (!isset($_SESSION)) session_start();
-    if (!isset($_SESSION['MKA_Logado'])) {
-        exit('Acesso negado... <a href="/admin/login.hhvm">Fazer Login</a>');
-    } else {
-    }
-}
+mkauth_addon_require_login();
 ?>
 <!DOCTYPE html>
 <?php

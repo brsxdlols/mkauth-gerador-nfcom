@@ -45,6 +45,11 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Gera o CSV DICI diretamente em UTF-8 com BOM e finais de linha CRLF, conforme exigência exibida pelo portal da ANATEL.
 - Não depende mais do privilégio MySQL `INTO OUTFILE` para gerar o arquivo DICI.
 
+## Correções da versão 1.1.1
+
+- Centraliza a validação da sessão autenticada do MK-Auth e elimina chamadas duplicadas a `session_name()` nas páginas do addon.
+- Corrige a tela `Acesso negado` em instalações com PHP 8 quando o usuário já está autenticado no painel.
+
 ## Validação manual sem emitir NFCOM
 
 Após instalar, autentique-se no painel e abra **Opções → NFCOM / Gerador NF DICI**. Confirme apenas carregamento, navegação e presença do layout; não processe ou emita documento fiscal em produção durante o teste.
