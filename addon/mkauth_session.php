@@ -35,7 +35,7 @@ if (is_readable($mkauthAddonBootstrap)) {
 }
 
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.3');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.4');
 if (is_readable($manifestPath)) {
     $decoded = json_decode(file_get_contents($manifestPath));
     if (is_object($decoded)) $Manifest = $decoded;
