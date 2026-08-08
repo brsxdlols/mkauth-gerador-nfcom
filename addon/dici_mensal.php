@@ -1,5 +1,5 @@
 <?php
-include('addons.class.php');
+include('mkauth_session.php');
 mkauth_addon_require_login();
 ?>
 
