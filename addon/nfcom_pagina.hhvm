@@ -551,48 +551,6 @@ document.getElementById('reprocessar_popup').addEventListener('click', function(
 
  
 
-<script>
-  (function () {
-    const btn = document.getElementById('copy-pix-btn');
-    const pixKey = btn.getAttribute('data-pix');
-
-    async function copyToClipboard(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        try { await navigator.clipboard.writeText(text); return true; }
-        catch { return false; }
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try { document.execCommand('copy'); document.body.removeChild(textArea); return true; }
-        catch { document.body.removeChild(textArea); return false; }
-      }
-    }
-
-    btn.addEventListener('click', async function () {
-      const ok = await copyToClipboard(pixKey);
-      if (ok) {
-        const original = btn.innerHTML;
-        btn.innerHTML = '<i class="fa fa-check me-1"></i> Copiado!';
-        btn.classList.remove('btn-outline-success');
-        btn.classList.add('btn-success');
-        setTimeout(() => {
-          btn.innerHTML = original;
-          btn.classList.remove('btn-success');
-          btn.classList.add('btn-outline-success');
-        }, 2000);
-      } else {
-        alert('Não foi possível copiar automaticamente. Copie manualmente: ' + pixKey);
-      }
-    });
-  })();
-</script>
-
-
 <?php include('../../baixo.hhvm'); ?>
 
         <script src="../../menu.js.hhvm"></script>

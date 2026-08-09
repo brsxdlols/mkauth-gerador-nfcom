@@ -45,6 +45,12 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Gera o CSV DICI diretamente em UTF-8 com BOM e finais de linha CRLF, conforme exigência exibida pelo portal da ANATEL.
 - Não depende mais do privilégio MySQL `INTO OUTFILE` para gerar o arquivo DICI.
 
+## Novidades da versão 1.2.0
+
+- Remove todas as mensagens, dados e botões de doação/Pix do addon.
+- Adiciona o botão **Como enviar à ANATEL**, com guia passo a passo para envio, processamento, correção de ocorrências e obtenção do comprovante no sistema Coleta de Dados.
+- Inclui links oficiais da ANATEL e alerta para sempre conferir agenda, leiaute e material de apoio vigentes.
+
 ## Correções da versão 1.1.1
 
 - Centraliza a validação da sessão autenticada do MK-Auth e elimina chamadas duplicadas a `session_name()` nas páginas do addon.

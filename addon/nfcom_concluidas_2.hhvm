@@ -582,83 +582,9 @@ document.querySelectorAll('.btn-nfcom-action').forEach(btn => {
       </a>
     </div>
 
-    <hr style="width: 220px; margin: 8px auto; border-top: 1px dashed #ccc;">
-
-<div class="mt-2">
-  <h6 class="text-success mb-1" style="font-weight: bold;">💚 Contribua com nosso projeto</h6>
-  <p class="mb-1" style="font-size: 12px;">
-    PIX: <strong id="pix-key-display">82 98736-1943</strong> <br>
-    Beneficiário: <strong>Elton Pereira</strong> <br>
-    Banco Inter
-  </p>
-
-  <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-    <div>
-      <img src="https://almactelecomsl.com.br/central/imgpix/pix-qrcode.jpeg"
-           alt="QR Code Pix"
-           style="width: 120px; border-radius: 10px; border: 1px solid #ddd;">
-    </div>
-    <div>
-      <button
-        id="copy-pix-btn"
-        class="btn btn-outline-success"
-        type="button"
-        data-pix="82 98736-1943"
-      >
-        <i class="fa fa-copy me-1"></i> Copiar chave PIX
-      </button>
     </div>
   </div>
 </div>
-
-<p style="font-size: 14px;" class="text-danger">
-  ⚠️ 1 real que você doa não vai te deixar mais liso — ajuda muito! 🙏 deixa de ser pirangueiro. kkk
-</p>
-
-    </div>
-  </div>
-</div>
-
-<script>
-  (function () {
-    const btn = document.getElementById('copy-pix-btn');
-    const pixKey = btn.getAttribute('data-pix');
-
-    async function copyToClipboard(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        try { await navigator.clipboard.writeText(text); return true; }
-        catch { return false; }
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try { document.execCommand('copy'); document.body.removeChild(textArea); return true; }
-        catch { document.body.removeChild(textArea); return false; }
-      }
-    }
-
-    btn.addEventListener('click', async function () {
-      const ok = await copyToClipboard(pixKey);
-      if (ok) {
-        const original = btn.innerHTML;
-        btn.innerHTML = '<i class="fa fa-check me-1"></i> Copiado!';
-        btn.classList.remove('btn-outline-success');
-        btn.classList.add('btn-success');
-        setTimeout(() => {
-          btn.innerHTML = original;
-          btn.classList.remove('btn-success');
-          btn.classList.add('btn-outline-success');
-        }, 2000);
-      } else {
-        alert('Não foi possível copiar automaticamente. Copie manualmente: ' + pixKey);
-      }
-    });
-  })();
-</script>
 
 
 <?php include('../../baixo.hhvm'); ?>

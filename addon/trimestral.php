@@ -227,24 +227,7 @@ if(isset($_SESSION['MM_Usuario'])){
         </a>
     </div>
 
-    <div class="text-center" style="font-size: 12px; color: #555;">
-        <p class="mb-1"><strong>🙏 AJUDE O PROJETO</strong></p>
-        <p class="mb-1">Chave pix Celular: <span id="pixKey">82987361943</span></p>
-        <p class="mb-1">🏦 Banco Inter — 👤 Elton Pereira</p>
-        <button class="btn btn-sm btn-success" onclick="copiarPix()">📋 Copiar PIX</button>
-    </div>
 </div>
-
-<script>
-function copiarPix() {
-    var pix = document.getElementById("pixKey").innerText;
-    navigator.clipboard.writeText(pix).then(function() {
-        alert("✅ PIX copiado: " + pix);
-    }, function() {
-        alert("❌ Erro ao copiar PIX!");
-    });
-}
-</script>       
 
     
         <script>

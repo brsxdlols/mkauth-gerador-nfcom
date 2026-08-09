@@ -52,7 +52,7 @@ if (!defined('ADMIN2URL')) {
 }
 
 $manifestPath = __DIR__ . '/manifest.json';
-$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.1.9');
+$Manifest = (object) array('name' => 'GERADOR DE NFcom + Dici', 'version' => '1.2.0');
 if (is_readable($manifestPath)) {
     $decoded = json_decode(file_get_contents($manifestPath));
     if (is_object($decoded)) $Manifest = $decoded;

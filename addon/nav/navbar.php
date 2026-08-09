@@ -65,6 +65,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <i style="color: #100324ff;"></i> 📘 (Guia NFCOM)
 </a>
         </li>
+        <li>
+            <a href="#" onclick="abrirGuiaAnatel(); return false;">
+                <i class="bi bi-send-check" style="color: #0d6efd;"></i> Como enviar à ANATEL
+            </a>
+        </li>
     </ul>
 </div>
 
@@ -102,3 +107,5 @@ $current_page = basename($_SERVER['PHP_SELF']);
     background-color: #f8f9fa;
 }
 </style>
+
+<?php include __DIR__ . '/anatel_guide.php'; ?>
