@@ -25,21 +25,92 @@ if (isset($_GET['form_submitted'])) {
     $cli_gerarNF = isset($_GET['ngerarnf']) ? "(a.geranfe = 'sim' OR a.geranfe = 'nao')" : "a.geranfe = 'sim'";
     $cli_gerarNF_aux = isset($_GET['ngerarnf']) ? "'F'" : "'T'";
 
-    $result = $link->query("
-        SELECT IF(prov.cnpj IS NULL, '00000000000000', REPLACE(REPLACE(REPLACE(prov.cnpj, '.', ''), '-', ''), '/', '')) AS CNPJ, '$cli_ano' AS ANO, '$cli_mes' AS MES, a.cidade_ibge AS COD_IBGE, IF(a.tipo_pessoa = 3, 'PF', 'PJ') AS TIPO_CLIENTE,
-            IF(INSTR(a.tags, 'rural') <> 0, 'RURAL', 'URBANO') AS TIPO_ATENDIMENTO,
-            IF(p.tecnologia = 'H', 'fibra', IF(p.tecnologia IN ('k', 'D', 'C'), 'radio', IF(p.tecnologia = 'G', 'satelite', IF(p.tecnologia = 'M', 'cabo_metalico', IF(p.tecnologia = 'J', 'cabo_coaxial', 'cabo_metalico'))))) AS TIPO_MEIO,
-            'internet' AS TIPO_PRODUTO, 'ETHERNET' AS TIPO_TECNOLOGIA, FORMAT(p.veldown, 0) AS VELOCIDADE, COUNT(*) AS ACESSOS
-        FROM sis_provedor prov, sis_cliente a INNER JOIN sis_plano p ON a.plano = p.nome 
+    /*
+     * Resolve o IBGE sem alterar o cadastro:
+     * 1) código válido do cliente; 2) cidade/UF inequívoca da tabela NAS;
+     * 3) cidade/UF com um único código válido entre os demais clientes.
+     */
+    $normalizeCitySql = "LOWER(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(%s), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' ')) COLLATE utf8mb4_unicode_ci";
+    $clientCityKey = sprintf($normalizeCitySql, 'a.cidade');
+    $ibgeSql = "CASE
+        WHEN TRIM(COALESCE(a.cidade_ibge, '')) REGEXP '^[0-9]{7}$'
+            THEN TRIM(a.cidade_ibge)
+        WHEN nas_ibge.COD_IBGE IS NOT NULL THEN nas_ibge.COD_IBGE
+        WHEN cli_ibge.COD_IBGE IS NOT NULL THEN cli_ibge.COD_IBGE
+        ELSE ''
+    END";
+    $ibgeJoins = "
+        LEFT JOIN (
+            SELECT LOWER(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(cidade), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' ')) COLLATE utf8mb4_unicode_ci AS CIDADE_KEY,
+                   UPPER(TRIM(estado)) AS UF_KEY,
+                   MIN(TRIM(cidade_ibge)) AS COD_IBGE
+            FROM nas
+            WHERE TRIM(COALESCE(cidade_ibge, '')) REGEXP '^[0-9]{7}$'
+            GROUP BY CIDADE_KEY, UF_KEY
+            HAVING COUNT(DISTINCT TRIM(cidade_ibge)) = 1
+        ) nas_ibge ON nas_ibge.CIDADE_KEY COLLATE utf8mb4_unicode_ci = $clientCityKey
+                  AND nas_ibge.UF_KEY = UPPER(TRIM(a.estado))
+        LEFT JOIN (
+            SELECT LOWER(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(cidade), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' ')) COLLATE utf8mb4_unicode_ci AS CIDADE_KEY,
+                   UPPER(TRIM(estado)) AS UF_KEY,
+                   MIN(TRIM(cidade_ibge)) AS COD_IBGE
+            FROM sis_cliente
+            WHERE TRIM(COALESCE(cidade_ibge, '')) REGEXP '^[0-9]{7}$'
+            GROUP BY CIDADE_KEY, UF_KEY
+            HAVING COUNT(DISTINCT TRIM(cidade_ibge)) = 1
+        ) cli_ibge ON cli_ibge.CIDADE_KEY COLLATE utf8mb4_unicode_ci = $clientCityKey
+                  AND cli_ibge.UF_KEY = UPPER(TRIM(a.estado))";
+
+    $unresolved = $link->query("
+        SELECT a.nome, a.cidade, a.estado, a.cidade_ibge
+        FROM sis_cliente a
+        INNER JOIN sis_plano p ON a.plano = p.nome
+        $ibgeJoins
         WHERE $cli_ativado
         AND $cli_bloqueado
         AND $cli_gerarSici
         AND $cli_gerarNF
         AND $cli_isentoP
-        AND a.cidade_ibge IS NOT NULL
         AND a.plano IS NOT NULL
         AND STR_TO_DATE(a.cadastro, '%d/%m/%Y') <= STR_TO_DATE('30/$cli_mes/$cli_ano', '%d/%m/%Y')
-        GROUP BY a.cidade_ibge, a.tipo_pessoa, TIPO_ATENDIMENTO, TIPO_MEIO, p.veldown");
+        AND ($ibgeSql) = ''
+        ORDER BY a.cidade, a.estado, a.nome");
+    if (!$unresolved) {
+        http_response_code(500);
+        exit('Falha ao validar os códigos IBGE: ' . htmlspecialchars($link->error, ENT_QUOTES, 'UTF-8'));
+    }
+    if ($unresolved->num_rows > 0) {
+        http_response_code(422);
+        echo '<strong>CSV não gerado:</strong> existem ' . (int)$unresolved->num_rows
+            . ' clientes sem um código IBGE municipal válido e inequívoco.<br>';
+        echo 'Corrija Cidade, UF e Código IBGE no cadastro dos clientes abaixo:<ul>';
+        $shown = 0;
+        while ($bad = $unresolved->fetch_assoc()) {
+            if ($shown++ >= 50) break;
+            echo '<li>' . htmlspecialchars($bad['nome'], ENT_QUOTES, 'UTF-8') . ' — '
+                . htmlspecialchars((string)$bad['cidade'], ENT_QUOTES, 'UTF-8') . '/'
+                . htmlspecialchars((string)$bad['estado'], ENT_QUOTES, 'UTF-8') . '</li>';
+        }
+        echo '</ul>';
+        if ($unresolved->num_rows > 50) echo '<em>Lista limitada aos primeiros 50 registros.</em>';
+        exit;
+    }
+
+    $result = $link->query("
+        SELECT IF(prov.cnpj IS NULL, '00000000000000', REPLACE(REPLACE(REPLACE(prov.cnpj, '.', ''), '-', ''), '/', '')) AS CNPJ, '$cli_ano' AS ANO, '$cli_mes' AS MES, ($ibgeSql) AS COD_IBGE, IF(a.tipo_pessoa = 3, 'PF', 'PJ') AS TIPO_CLIENTE,
+            IF(INSTR(a.tags, 'rural') <> 0, 'RURAL', 'URBANO') AS TIPO_ATENDIMENTO,
+            IF(p.tecnologia = 'H', 'fibra', IF(p.tecnologia IN ('k', 'D', 'C'), 'radio', IF(p.tecnologia = 'G', 'satelite', IF(p.tecnologia = 'M', 'cabo_metalico', IF(p.tecnologia = 'J', 'cabo_coaxial', 'cabo_metalico'))))) AS TIPO_MEIO,
+            'internet' AS TIPO_PRODUTO, 'ETHERNET' AS TIPO_TECNOLOGIA, FORMAT(p.veldown, 0) AS VELOCIDADE, COUNT(*) AS ACESSOS
+        FROM sis_provedor prov, sis_cliente a INNER JOIN sis_plano p ON a.plano = p.nome
+        $ibgeJoins
+        WHERE $cli_ativado
+        AND $cli_bloqueado
+        AND $cli_gerarSici
+        AND $cli_gerarNF
+        AND $cli_isentoP
+        AND a.plano IS NOT NULL
+        AND STR_TO_DATE(a.cadastro, '%d/%m/%Y') <= STR_TO_DATE('30/$cli_mes/$cli_ano', '%d/%m/%Y')
+        GROUP BY COD_IBGE, a.tipo_pessoa, TIPO_ATENDIMENTO, TIPO_MEIO, p.veldown");
 
     if (!$result) {
         http_response_code(500);

@@ -51,6 +51,12 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Adiciona o botão **Como enviar à ANATEL**, com guia passo a passo para envio, processamento, correção de ocorrências e obtenção do comprovante no sistema Coleta de Dados.
 - Inclui links oficiais da ANATEL e alerta para sempre conferir agenda, leiaute e material de apoio vigentes.
 
+## Correções da versão 1.2.1
+
+- Impede a geração de DICI com `COD_IBGE` vazio, que aparecia no CSV como dois pontos e vírgulas consecutivos depois do mês.
+- Completa o IBGE sem alterar o banco quando Cidade/UF correspondem de forma inequívoca ao cadastro municipal do MK-Auth, inclusive com diferenças de acentuação e espaços.
+- Quando o município não pode ser determinado com segurança, bloqueia o arquivo e informa os clientes que precisam de correção cadastral.
+
 ## Correções da versão 1.1.1
 
 - Centraliza a validação da sessão autenticada do MK-Auth e elimina chamadas duplicadas a `session_name()` nas páginas do addon.
