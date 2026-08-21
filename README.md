@@ -57,6 +57,12 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Completa o IBGE sem alterar o banco quando Cidade/UF correspondem de forma inequívoca ao cadastro municipal do MK-Auth, inclusive com diferenças de acentuação e espaços.
 - Quando o município não pode ser determinado com segurança, bloqueia o arquivo e informa os clientes que precisam de correção cadastral.
 
+## Correções da versão 1.2.2
+
+- Adota a mesma consulta DICI do addon de referência que já funciona no MK-Auth, usando diretamente o `cidade_ibge` cadastrado.
+- Remove a tentativa de localizar ou completar códigos IBGE e não altera cadastros nem o banco.
+- Mantém a melhoria de saída: CSV com 11 colunas, separador `;`, finais de linha CRLF e UTF-8 com BOM.
+
 ## Correções da versão 1.1.1
 
 - Centraliza a validação da sessão autenticada do MK-Auth e elimina chamadas duplicadas a `session_name()` nas páginas do addon.
