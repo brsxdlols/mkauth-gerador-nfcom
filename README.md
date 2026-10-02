@@ -69,6 +69,12 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Mantém a rolagem somente dentro das tabelas quando a tela for estreita.
 - Corrige larguras em `vw` que podiam ultrapassar a área visível do navegador.
 
+## Correções da versão 1.2.4
+
+- Elimina a segunda barra vertical causada pela combinação de overflow em `html` e `body`.
+- Remove alturas fixas e rolagens internas artificiais das telas DICI e PPP.
+- Em telas grandes, ajusta as tabelas à largura disponível; em telas pequenas, preserva a rolagem horizontal responsiva.
+
 ## Correções da versão 1.1.1
 
 - Centraliza a validação da sessão autenticada do MK-Auth e elimina chamadas duplicadas a `session_name()` nas páginas do addon.

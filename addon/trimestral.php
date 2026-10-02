@@ -191,7 +191,7 @@ if(isset($_SESSION['MM_Usuario'])){
 
         <h5 class="text-center mb-3"><b>Histórico de arquivos PPP gerados no sistema</b></h5>
 
-        <div class="table-responsive mx-auto" style="height:150px; overflow:auto; max-width: 800px;">
+        <div class="table-responsive mx-auto" style="max-width: 800px;">
             <table class="table table-striped table-hover text-center">
                 <thead class="table-dark">
                     <tr>

@@ -174,7 +174,7 @@ Relatorio Gerado - Mes de Referencia= <b><?php echo $cli_mes; ?></b> e Ano= <b><
 </div>
 <br/>
 <b>Clientes Adicionados no Relatorio</b>
-<div style="display: grid; overflow:scroll; height:150px;">
+<div style="display:grid;">
     <table>
         <thead>
             <tr class="tab_th">
@@ -193,7 +193,7 @@ Relatorio Gerado - Mes de Referencia= <b><?php echo $cli_mes; ?></b> e Ano= <b><
 
 <br/>
 <b>Clientes Nao adicionados no Relatorio</b>
-<div style="display: grid; overflow:scroll; height:150px;">
+<div style="display:grid;">
     <table>
         <thead>
             <tr class="tab_th">

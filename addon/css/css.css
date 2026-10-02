@@ -2,7 +2,10 @@
 /* Mantem a rolagem horizontal dentro das tabelas, sem alargar a pagina inteira. */
 html, body {
     max-width: 100%;
-    overflow-x: hidden;
+}
+
+body {
+    overflow-x: clip;
 }
 
 #form_nfe,
@@ -15,6 +18,23 @@ html, body {
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+@media screen and (min-width: 992px) {
+    .table-responsive {
+        overflow-x: visible;
+    }
+
+    .table-responsive > table {
+        width: 100%;
+        max-width: 100%;
+        table-layout: fixed;
+    }
+
+    .table-responsive th,
+    .table-responsive td {
+        overflow-wrap: anywhere;
+    }
 }
 /*table {
     border-collapse: collapse;

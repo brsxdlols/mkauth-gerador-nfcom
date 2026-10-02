@@ -155,7 +155,7 @@ $mesAtual = date("m");
 <div id="resultadoRelatorio"></div>
 
 <h5 class="text-center mb-3"><b>Histórico de arquivos DICI gerados no sistema</b></h5>
-<div class="table-responsive" style="max-height: 400px; overflow:auto;">
+<div class="table-responsive">
     <table class="table table-striped table-hover text-center">
         <thead class="table-dark">
             <tr>
