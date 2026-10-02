@@ -21,6 +21,7 @@ if(isset($_SESSION['MM_Usuario'])){
         <script src="../../scripts/jquery.js"></script>
         <script src="../../scripts/mk-auth.js"></script>
         <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
+        <link href="css/css.css" rel="stylesheet" type="text/css" />
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 

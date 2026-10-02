@@ -75,6 +75,11 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Remove alturas fixas e rolagens internas artificiais das telas DICI e PPP.
 - Em telas grandes, ajusta as tabelas à largura disponível; em telas pequenas, preserva a rolagem horizontal responsiva.
 
+## Correções da versão 1.2.5
+
+- Passa a carregar o CSS corretivo também nas telas DICI, PPP e Ativar DICI/NF.
+- Elimina a rolagem horizontal que permanecia no histórico DICI por falta desse CSS.
+
 ## Correções da versão 1.1.1
 
 - Centraliza a validação da sessão autenticada do MK-Auth e elimina chamadas duplicadas a `session_name()` nas páginas do addon.
