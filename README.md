@@ -63,6 +63,12 @@ sh /tmp/install-gerador-nfcom.sh --rollback latest
 - Remove a tentativa de localizar ou completar códigos IBGE e não altera cadastros nem o banco.
 - Mantém a melhoria de saída: CSV com 11 colunas, separador `;`, finais de linha CRLF e UTF-8 com BOM.
 
+## Correções da versão 1.2.3
+
+- Remove a rolagem horizontal indevida da página do addon.
+- Mantém a rolagem somente dentro das tabelas quando a tela for estreita.
+- Corrige larguras em `vw` que podiam ultrapassar a área visível do navegador.
+
 ## Correções da versão 1.1.1
 
 - Centraliza a validação da sessão autenticada do MK-Auth e elimina chamadas duplicadas a `session_name()` nas páginas do addon.

@@ -1,5 +1,21 @@
 /* color orange = #dd4510 change --> Navy*/
-/*body { overflow-x: hidden; }*/
+/* Mantem a rolagem horizontal dentro das tabelas, sem alargar a pagina inteira. */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+#form_nfe,
+.container-fluid,
+.table-responsive {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
 /*table {
     border-collapse: collapse;
     border-spacing: 0;
@@ -101,14 +117,14 @@ float:left;
 .position_fixed { max-width: 800px; height: 400px; margin:0 auto;}
 .hide { display:none;}
 
-.div_middle { width: 100vw; max-width: 100%;
+.div_middle { width: 100%; max-width: 100%;
     /*background: #6C7A89;*/
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.div_middle_2 { width: 800vw; max-width: 100%;
+.div_middle_2 { width: 100%; max-width: 100%;
     /*background: #6C7A89;*/
     display: flex;
     justify-content: center;
