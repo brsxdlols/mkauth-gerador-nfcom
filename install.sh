@@ -39,6 +39,12 @@ restore_backup() {
     say "Restaurando $backup"
     [ -d "$backup/addon" ] && { rm -rf "$MK_ROOT/$ADDON_REL"; cp -a "$backup/addon" "$MK_ROOT/$ADDON_REL"; }
     [ -d "$backup/layout" ] && { rm -rf "$MK_ROOT/$LAYOUT_REL"; cp -a "$backup/layout" "$MK_ROOT/$LAYOUT_REL"; }
+    if [ -d "$backup/rel_trafego" ]; then
+        rm -rf "$MK_ROOT/admin/addons/rel_trafego"
+        cp -a "$backup/rel_trafego" "$MK_ROOT/admin/addons/rel_trafego"
+    elif [ -f "$backup/rel_trafego.absent" ]; then
+        rm -rf "$MK_ROOT/admin/addons/rel_trafego"
+    fi
     [ -f "$backup/addon.js" ] && cp -a "$backup/addon.js" "$MK_ROOT/$MENU_REL"
     say "Rollback concluído."
     exit 0
@@ -70,6 +76,8 @@ mkdir -p "$backup"
 [ ! -e "$MK_ROOT/$ADDON_REL" ] || cp -a "$MK_ROOT/$ADDON_REL" "$backup/addon"
 [ ! -e "$MK_ROOT/$LAYOUT_REL" ] || cp -a "$MK_ROOT/$LAYOUT_REL" "$backup/layout"
 [ ! -e "$MK_ROOT/$MENU_REL" ] || cp -a "$MK_ROOT/$MENU_REL" "$backup/addon.js"
+[ ! -e "$MK_ROOT/admin/addons/rel_trafego" ] || cp -a "$MK_ROOT/admin/addons/rel_trafego" "$backup/rel_trafego"
+[ -e "$MK_ROOT/admin/addons/rel_trafego" ] || : > "$backup/rel_trafego.absent"
 say "Backup criado em $backup"
 
 stage_addon="$tmp/addon.new"
@@ -98,6 +106,16 @@ rm -rf "$MK_ROOT/$ADDON_REL" "$MK_ROOT/$LAYOUT_REL"
 mv "$MK_ROOT/$ADDON_REL.new" "$MK_ROOT/$ADDON_REL"
 mv "$MK_ROOT/$LAYOUT_REL.new" "$MK_ROOT/$LAYOUT_REL"
 
+
+# Relatorio de Trafego: pacote comum, sem credenciais ou dados de clientes.
+[ -d "$src/rel_trafego" ] || die "Relatorio de Trafego ausente no pacote."
+find "$src/rel_trafego" -type f -name '*.php' -exec php -l {} \; >/dev/null
+mkdir -p "$MK_ROOT/admin/addons/rel_trafego"
+cp -a "$src/rel_trafego/." "$MK_ROOT/admin/addons/rel_trafego/"
+find "$MK_ROOT/admin/addons/rel_trafego" -type d -exec chmod 755 {} \;
+find "$MK_ROOT/admin/addons/rel_trafego" -type f -exec chmod 644 {} \;
+chown -R root:root "$MK_ROOT/admin/addons/rel_trafego"
+
 menu="$MK_ROOT/$MENU_REL"
 [ -f "$menu" ] || : > "$menu"
 awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '
@@ -105,12 +123,14 @@ awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '
     $0 == end { managed=0; next }
     managed { next }
     /addons\/gerador_nf_dici\// { next }
+    /addons\/rel_trafego\// { next }
     { print }
 ' "$menu" > "$tmp/addon.js"
 {
     cat "$tmp/addon.js"
     printf '\n%s\n' "$BEGIN_MARKER"
     printf '%s\n' "add_menu.provedor('{\"plink\": \"' + minha_url + 'addons/gerador_nf_dici/index.hhvm\", \"ptext\": \"NFCOM / Gerador NF DICI\"}');"
+    printf '%s\n' "add_menu.provedor('{\"plink\": \"' + minha_url + 'addons/rel_trafego/\", \"ptext\": \"Relatorio de Trafego\"}');"
     printf '%s\n' "$END_MARKER"
 } > "$tmp/addon.js.new"
 cp "$tmp/addon.js.new" "$menu"

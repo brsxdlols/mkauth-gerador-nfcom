@@ -92,3 +92,17 @@ Após instalar, autentique-se no painel e abra **Opções → NFCOM / Gerador NF
 ## Licença
 
 MIT. Consulte [LICENSE](LICENSE).
+
+## Relatório de Tráfego incluído
+
+O instalador também instala o relatório em `/admin/addons/rel_trafego/` e registra **Provedor → Relatorio de Trafego**, sem duplicar atalhos. Mostra download, upload e total por período usando somente consultas à tabela RADIUS. Reutiliza a conexão oficial do MK-Auth. O backup e o rollback incluem o relatório.
+
+## Instalação única: NFCOM + DICI + Tráfego
+
+Execute como root no servidor MK-Auth:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-gerador-nfcom/main/install-all.sh | sh
+```
+
+Executa os dois instaladores oficiais, com backups próprios. Em caso de falha, interrompe e preserva os backups; não há rollback automático conjunto. Os três atalhos ficam em **Provedor**.
